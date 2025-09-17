@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require("fs")
 const filePath = "./tasks.json";
 
 const loadTasks = () => {
@@ -20,7 +20,7 @@ const addTask = (task) => {
   const tasks = loadTasks();
   tasks.push({ task });
   saveTasks(tasks);
-  console.log("Task added", task);
+  console.log("Task added:", task);
 };
 
 const listTasks = () => {
@@ -28,7 +28,16 @@ const listTasks = () => {
   tasks.forEach((task, index) => console.log(`${index + 1} - ${task.task}`));
 };
 
-// TODO: Remove task by index
+const removeTask = (index) => {
+  const tasks = loadTasks();
+  if (index > 0 && index <= tasks.length) {
+    tasks.splice(index - 1, 1);
+    saveTasks(tasks);
+    console.log(`Removed task #${index}`);
+  } else {
+    console.log("Invalid task number");
+  }
+};
 
 const command = process.argv[2];
 const argument = process.argv[3];
