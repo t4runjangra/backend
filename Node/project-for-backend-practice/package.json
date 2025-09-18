@@ -1,0 +1,20 @@
+{
+  "name": "project-for-backend-practice",
+  "version": "1.0.0",
+  "description": "a backend journey start from here ",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "keywords": [
+    "backend",
+    "nodejs",
+    "API"
+  ],
+  "author": "Tarun",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "3.6.2"
+  }
+}
