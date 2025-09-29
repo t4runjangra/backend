@@ -27,6 +27,7 @@
     "jsonwebtoken": "^9.0.2",
     "mailgen": "^2.0.30",
     "mongodb": "^6.20.0",
-    "mongoose": "^8.18.1"
+    "mongoose": "^8.18.1",
+    "nodemailer": "^7.0.6"
   }
 }
