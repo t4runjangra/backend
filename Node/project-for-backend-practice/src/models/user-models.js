@@ -2,7 +2,6 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-const crypto = require('crypto');
 
 
 const userSchema = new Schema({
@@ -56,7 +55,7 @@ const userSchema = new Schema({
         type: String
     },
     emailVerificationExpiry: {
-        type: date
+        type: Date
     }
 }, {
         timestamps: true
@@ -116,7 +115,7 @@ userSchema.method.generateTemporaryToken = function(){
 
 
  
-export const user = mongoose.model("user", userSchema)
+export const User = mongoose.model("user", userSchema)
 
 
 
