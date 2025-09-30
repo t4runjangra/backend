@@ -13,7 +13,7 @@ const sendEmail = async (options) => {
             }
         }
     )
-    const emailTextual = mailGenerator.generatePlainText(options.mailgenContent) // this will generate the mail in textual format in case the client does not support the html
+    const emailTextual = mailGenerator.generatePlaintext(options.mailgenContent) // this will generate the mail in textual format in case the client does not support the html
     const emailHtml = mailGenerator.generate(options.mailgenContent) // this will generate the HTML mail
 
     // here we have a transporter method(object) of the nodemailer used to send mail 
@@ -31,7 +31,7 @@ const sendEmail = async (options) => {
     // store info of your mail like who is sending and other credentials 
     const mail = {
         from: "mail.tarunjangra1903@gmail.com",
-        to: options.mail,
+        to: options.email,
         text: emailTextual,
         html: emailHtml,
     }
