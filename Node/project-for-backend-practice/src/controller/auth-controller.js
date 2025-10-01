@@ -120,5 +120,51 @@ const registerUser = asyncHandler(async (req, res) => {
     )
 })
 
+const login = asyncHandler(async (req, res) => {
+    const { email, password } = req.body
+
+    if (!email) {
+        throw new apiError(400, "Email is required")
+    }
+
+    const user = await User.findOne({ email })
+
+    if (!user) {
+        throw new apiError(400, "User does not exist")
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password)
+
+    if (!isPasswordValid) {
+        throw new apiError(400, "Invalid Credentials")
+    }
+
+    const { accessToken, refreshToken } = await generateAccesstokenAndRefreshToken(user._id)
+
+    const loggedInUser = await User.findById(user._id).select(
+        "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+    )
+
+    const options = {
+        httpOnly : true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+        new apiResponse(200, {
+            user : loggedInUser,
+            accessToken,
+            refreshToken
+        },
+        "User Logged in successfully"
+    )
+
+    )
+})
+
 // can be used in other folders as well 
-export { registerUser };
+export { registerUser, login };

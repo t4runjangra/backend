@@ -59,8 +59,8 @@ const userSchema = new Schema({
         type: Date
     }
 }, {
-        timestamps: true
-    }
+    timestamps: true
+}
 )
 
 userSchema.pre("save", async function (next) {
@@ -72,10 +72,11 @@ userSchema.pre("save", async function (next) {
 
 //methods in Schema
 userSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcrypt.compare(password, this.password)
+    // stringfy it before using because the password came as in the form of string
+    return await bcrypt.compare(String(password), String(this.password))
 }
 
-userSchema.method.generateAccessToken = function () {
+userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
         //this is a payload
         {
@@ -91,7 +92,7 @@ userSchema.method.generateAccessToken = function () {
     )
 }
 
-userSchema.method.generateRefreshToken = function () {
+userSchema.methods.generateRefreshToken = function () {
     return jwt.sign({
         _id: this._id,
         email: this.email,
@@ -101,21 +102,21 @@ userSchema.method.generateRefreshToken = function () {
     })
 }
 
-userSchema.methods.generateTemporaryToken = function(){
+userSchema.methods.generateTemporaryToken = function () {
 
     const unHashedToken = crypto.randomBytes(20).toString("hex")
     const hashedToken = crypto.createHash("sha256")
-    .update(unHashedToken)
-    .digest("hex")
+        .update(unHashedToken)
+        .digest("hex")
 
-    const tokenExpiry = Date.now() + (20*60*1000)
+    const tokenExpiry = Date.now() + (20 * 60 * 1000)
 
-    return {unHashedToken, hashedToken, tokenExpiry}
+    return { unHashedToken, hashedToken, tokenExpiry }
 
 }
 
 
- 
+
 export const User = mongoose.model("user", userSchema)
 
 
