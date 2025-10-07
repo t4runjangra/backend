@@ -33,7 +33,7 @@ router.route("/register").post(userRegisterValidator(), validate, registerUser);
 router.route("/login").post(userLoginValidator(), validate, login);
 
 router
-    .route("/verify-email:verificationToken").get
+    .route("/verify-email/:verificationToken").get
     (verifyEmail);
 
 

@@ -15,6 +15,10 @@ import { apiError } from "../utils/api-error.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import { sendEmail, emailVerificationMailgenContent, forgotPasswordMailgenContent } from "../utils/mail.js";
 import jwt from "jsonwebtoken";
+import crypto from "crypto"
+import { log } from "console";
+
+
 const generateAccesstokenAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId)
@@ -206,43 +210,40 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
 
 const verifyEmail = asyncHandler(async (req, res) => {
-    const { verificationToken } = req.params
+    const { verificationToken } = req.params;
 
     if (!verificationToken) {
         throw new apiError(400, "Email verification token is missing");
     }
+
     let hashedToken = crypto
         .createHash("sha256")
         .update(verificationToken)
-        .digest("hex")
+        .digest("hex");
 
-    await User.findOne({
+
+    const user = await User.findOne({
         emailVerificationToken: hashedToken,
-        emaailVerificationToken: { $gt: Date.now() }
-    })
+        emailVerificationExpiry: { $gt: Date.now() }
+    });
+
     if (!user) {
         throw new apiError(400, "Token is invalid or expired");
     }
 
-    user.emailVerificationToken = undefined
-    user.emailVerificationExpiry = undefined
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpiry = undefined;
+    user.isEmailVerified = true;
+    await user.save({ validateBeforeSave: false });
 
-    user.isEmailVerified = true
-    await user.save({ validateBeforeSave: false })
-
-    return res
-        .status(200)
-        .json(
-            new apiResponse(
-                200,
-                {
-                    isEmailVerified: true
-                },
-                "Email is verified"
-            )
+    return res.status(200).json(
+        new apiResponse(
+            200,
+            { isEmailVerified: true },
+            "Email is verified"
         )
-})
-
+    );
+});
 
 const resendEmailVerification = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user?._id)
@@ -353,41 +354,39 @@ const frogotPasswordRequest = asyncHandler(async (req, res) => {
         )
     })
 
-        return  res.status(200).json(
-            new apiResponse(
-                200,
-                {},
-                "Password reset mail has been sent on your email"
-            )
+    return res.status(200).json(
+        new apiResponse(
+            200,
+            {},
+            "Password reset mail has been sent on your email"
         )
+    )
 })
 
 
-const resetForgotPassword = asyncHandler(async(req,res)=>{
-    const {resetToken} = req.params
-    const {newPassword} = req.body
+const resetForgotPassword = asyncHandler(async (req, res) => {
+    const { resetToken } = req.params;
+    const { newPassword } = req.body;
 
     let hashedToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex")    
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
 
     const user = await User.findOne({
-        forgotPasswordToken:hashedToken,
-        forgotPasswordExpiry: {$gt: Date.now()}
-    })    
+        forgotPasswordToken: hashedToken,
+        forgotPasswordExpiry: { $gt: Date.now() }
+    });
 
-    if(!user){
-        throw new apiError(489, "Token is invalid or expired");
+    if (!user) {
+        throw new apiError(400, "Token is invalid or expired");
     }
 
+    user.password = newPassword
     user.forgotPasswordExpiry = undefined
     user.forgotPasswordToken = undefined
 
-    user.password = newPassword
-
-
-    await user.save({validateBeforeSave : false})
+    await user.save({ validateBeforeSave: false })
 
     return res.status(200).json(
         new apiResponse(
@@ -401,22 +400,22 @@ const resetForgotPassword = asyncHandler(async(req,res)=>{
 
 
 
-const changeCurrentPassword = asyncHandler(async(req,res)=>{
+const changeCurrentPassword = asyncHandler(async (req, res) => {
 
-    const {oldPassword, newPassword} = req.body
+    const { oldPassword, newPassword } = req.body
 
 
     const user = await User.findById(req.user?._id)
 
     const isPasswordValid = await user.isPasswordCorrect(oldPassword)
 
-    if(!isPasswordValid){
-        throw new apiError(404,"invalidPassword");
+    if (!isPasswordValid) {
+        throw new apiError(404, "invalidPassword");
     }
 
     user.password = newPassword
-    await user.save({validateBeforeSave: false})
-    
+    await user.save({ validateBeforeSave: false })
+
     return res.status(200).json(
         new apiResponse(
             200,
