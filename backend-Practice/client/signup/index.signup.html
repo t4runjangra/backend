@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up | My Website</title>
+  <link rel="stylesheet" href="/signup/style.css">
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Create Account</h2>
+    <form id="signupForm">
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+      <button type="submit">Sign Up</button>
+    </form>
+    <p>Already have an account? <a href="/login">Login here</a></p>
+    <p id="signupMsg" class="message"></p>
+  </div>
+
+  <script>
+    const signupForm = document.getElementById('signupForm');
+    const signupMsg = document.getElementById('signupMsg');
+
+    signupForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        signupMsg.textContent = "Passwords do not match!";
+        signupMsg.style.color = "red";
+        return;
+      }
+
+      localStorage.setItem('user', JSON.stringify({ name, email, password }));
+      signupMsg.textContent = "Signup successful! ✅";
+      signupMsg.style.color = "green";
+
+      signupForm.reset();
+      setTimeout(() => window.location.href = "login.html", 1000);
+    });
+  </script>
+</body>
+</html>

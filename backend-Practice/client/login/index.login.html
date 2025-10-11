@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | My Website</title>
+  <link rel="stylesheet" href="/login/style.css">
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="/signup">Sign up here</a></p>
+    <p id="loginMsg" class="message"></p>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const loginMsg = document.getElementById('loginMsg');
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+
+      if (storedUser && storedUser.email === email && storedUser.password === password) {
+        loginMsg.textContent = "Login successful ✅";
+        loginMsg.style.color = "green";
+        setTimeout(() => window.location.href = "index.html", 1000);
+      } else {
+        loginMsg.textContent = "Invalid email or password ❌";
+        loginMsg.style.color = "red";
+      }
+    });
+  </script>
+</body>
+</html>
