@@ -1,0 +1,22 @@
+{
+  "name": "02-express",
+  "version": "1.0.0",
+  "description": "a simple manager for express ",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "keywords": [
+    "express"
+  ],
+  "author": "Tarun",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
