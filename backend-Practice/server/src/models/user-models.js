@@ -4,16 +4,6 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 
 const userSchema = new Schema({
-  avatar: {
-    type: {
-      url: String,
-      localPath: String,
-    },
-    default: {
-      url: `https://placehold.co/200x200`,
-      localPath: "",
-    },
-  },
   username: {
     type: String,
     required: true,
@@ -100,4 +90,4 @@ userSchema.methods.generateTemporaryToken = function () {
 
 
 
-export const User = mongoose.model("user", userSchema);
+export const User = mongoose.model("User", userSchema);
