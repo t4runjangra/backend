@@ -9,7 +9,7 @@ import jwt from "jsonwebtoken";
 
 
 
- 
+
 const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId)
@@ -206,7 +206,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     } catch (error) {
         console.log("Error In refreshAccessToken Block", error)
         throw new apiError(500, "Something went wrong while refreshing the token");
-        
+
     }
 })
 
@@ -214,8 +214,24 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const logout = asyncHandler(async (req, res) => {
 
     await User.findByIdAndUpdate(
-           
+        req.user._id,
+        {
+            $set: {
+                refreshToken: undefined
+            }
+        }, { new: true }
     )
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "development"
+    }
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new apiResponse(200, {}, "User logged out successfully"))
+
 
 })
 
@@ -223,5 +239,6 @@ const logout = asyncHandler(async (req, res) => {
 export {
     registerUser,
     login,
-    logout
+    logout,
+    refreshAccessToken
 }
