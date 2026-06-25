@@ -7,4 +7,4 @@ router.get("/", (req, res) => {
 })
 
 
-export const userRoute = router
+export const userRoute = router   
