@@ -71,8 +71,20 @@ User  ---> users collection
 
 (pluralizes the model name)
 */
+userSchema.methods.sayHello = function () {
+    console.log("Hello" , this );
+}
+
+
 
 export const User = mongoose.model("User", userSchema);
+
+const user = new User({
+    username: "tarun"
+});
+
+
+user.sayHello()
 
 /*
 typeof User === "function"
@@ -221,3 +233,8 @@ This keeps the business rule inside the Model,
 preventing developers from accidentally saving
 plain-text passwords.
 */
+
+
+
+
+// user.sayHello();
