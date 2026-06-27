@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-
+import bcrypt from "bcrypt"
+import { jwt } from "jsonwebtoken";
 /*
 Schema is the blueprint of a MongoDB document.
 
@@ -71,11 +72,22 @@ User  ---> users collection
 
 (pluralizes the model name)
 */
-userSchema.methods.sayHello = function () {
-    console.log("Hello" , this );
+
+
+userSchema.methods.isPasswordCorrect = async function (password) {
+    return await bcrypt.compare(password, this.password)
+
 }
 
-
+userSchema.methods.generateAccessToken = function () {
+    return jwt.sign({
+        id: this._id,
+        username: this.username,
+        email: this.email
+    },
+        process.env.ACCESS_TOKEN_SECRET
+    )
+}
 
 export const User = mongoose.model("User", userSchema);
 
@@ -84,7 +96,6 @@ const user = new User({
 });
 
 
-user.sayHello()
 
 /*
 typeof User === "function"
