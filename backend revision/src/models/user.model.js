@@ -39,6 +39,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, "Password is required"]
         // Custom validation message if password is missing
+    },
+    refreshToken: {
+        type: String
     }
 
 })
@@ -54,12 +57,12 @@ The Model:
 - Talks to MongoDB.
 - Knows which collection to use.
 - Has CRUD methods like:
-    create()
-    find()
-    findOne()
-    updateOne()
-    deleteOne()
-    aggregate()
+create()
+find()
+findOne()
+updateOne()
+deleteOne()
+aggregate()
 
 Model is basically a constructor/class.
 
@@ -75,9 +78,40 @@ User  ---> users collection
 
 
 userSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcrypt.compare(password, this.password)
+    return bcrypt.compare(password, this.password)
 
 }
+userSchema.pre("save", async function (next) {
+
+    /*
+    'this' refers to the CURRENT document
+    that is being saved.
+
+    Example:
+
+    const user = new User({...});
+
+    await user.save();
+
+    Inside this middleware:
+
+    this === user
+
+    So:
+
+    this.username
+    this.email
+    this.password
+
+    all belong to that document.
+    */
+    if (!this.isModified("password")) return next()
+
+    this.password = await bcrypt.hash(this.password, 10)
+    console.log("Pre middleware executed");
+    next()
+
+});
 
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign({
@@ -85,15 +119,25 @@ userSchema.methods.generateAccessToken = function () {
         username: this.username,
         email: this.email
     },
-        process.env.ACCESS_TOKEN_SECRET
+        process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+    }
     )
 }
 
+userSchema.methods.generateRefreshToken = function () {
+    return jwt.sign({
+        id: this._id
+    },
+        process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+    }
+    )
+}
+
+
 export const User = mongoose.model("User", userSchema);
 
-const user = new User({
-    username: "tarun"
-});
 
 
 
@@ -184,34 +228,6 @@ Insert/Update MongoDB
 post("save")
 */
 
-userSchema.pre("save", function () {
-
-    /*
-    'this' refers to the CURRENT document
-    that is being saved.
-
-    Example:
-
-    const user = new User({...});
-
-    await user.save();
-
-    Inside this middleware:
-
-    this === user
-
-    So:
-
-    this.username
-    this.email
-    this.password
-
-    all belong to that document.
-    */
-
-    console.log("Pre middleware executed");
-
-});
 
 /*
 Real-world use of pre("save")
