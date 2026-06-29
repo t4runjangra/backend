@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt"
-import { jwt } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 /*
 Schema is the blueprint of a MongoDB document.
 
@@ -81,38 +81,37 @@ userSchema.methods.isPasswordCorrect = async function (password) {
     return bcrypt.compare(password, this.password)
 
 }
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
+    if (!this.isModified("password")) return;
 
-    /*
-    'this' refers to the CURRENT document
-    that is being saved.
+    this.password = await bcrypt.hash(this.password, 10);
 
-    Example:
-
-    const user = new User({...});
-
-    await user.save();
-
-    Inside this middleware:
-
-    this === user
-
-    So:
-
-    this.username
-    this.email
-    this.password
-
-    all belong to that document.
-    */
-    if (!this.isModified("password")) return next()
-
-    this.password = await bcrypt.hash(this.password, 10)
     console.log("Pre middleware executed");
-    next()
-
 });
 
+
+/*
+'this' refers to the CURRENT document
+that is being saved.
+ 
+Example:
+ 
+const user = new User({...});
+ 
+await user.save();
+ 
+Inside this middleware:
+ 
+this === user
+ 
+So:
+ 
+this.username
+this.email
+this.password
+ 
+all belong to that document.
+*/
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign({
         id: this._id,

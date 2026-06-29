@@ -1,4 +1,4 @@
-import { User } from "../models/user.model";
+import { User } from "../models/user.model.js";
 export const register = async (req, res, next) => {
     const { email, password, username } = req.body
     if (!email || !password || !username) return res.status(400).json({
@@ -29,11 +29,15 @@ export const login = async (req, res, next) => {
 
     const accessToken = await user.generateAccessToken()
     const refreshToken = await user.generateRefreshToken()
-
+    user.refreshToken = refreshToken;
+    await user.save();
     return res
-    .status(200)
-    .json({
-        message:"User Logged in Successful"
-    })
+        .status(200)
+        .json({
+            message: "User Logged in Successful",
+            accessToken,
+            refreshToken
+        }
+        )
 
 }
