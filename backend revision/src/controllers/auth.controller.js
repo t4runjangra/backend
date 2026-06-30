@@ -41,3 +41,15 @@ export const login = async (req, res, next) => {
         )
 
 }
+
+export const profile = (req, res) => {
+    return res.status(200).json(req.user);
+};
+export const logout = async (req, res) => {
+    await User.findByIdAndUpdate(req.user.id, {
+        $set: {
+            refreshToken: ""
+        }
+    })
+    return res.status(200).json({message:"User logged out "})
+}
