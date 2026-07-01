@@ -1,13 +1,16 @@
 import { User } from "../models/user.model.js";
-export const register = async (req, res, next) => {
+import { apiError } from "../utils/api.error.js";
+import { apiResponse } from "../utils/apiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+
+
+export const register = asyncHandler(async (req, res) => {
     const { email, password, username } = req.body
-    if (!email || !password || !username) return res.status(400).json({
-        message: "All fields are required "
-    })
+    if (!email || !password || !username) throw new apiError(400, "All fields are required ")
+
     const existingUser = await User.findOne({ $or: [{ email }, { username }] })
-    if (existingUser) {
-        return res.status(409).json({ message: "User already exist try other credentials" })
-    }
+    if (existingUser) throw new apiError(409, "User already exist try other credentials")
+
     const user = await User.create({
         username,
         email,
@@ -15,41 +18,47 @@ export const register = async (req, res, next) => {
     })
 
 
-    return res.status(201).json({ message: "user registered successfully" })
+    return res.status(201).json(
+        new apiResponse(201, user, "user registered successfully")
+    )
+})
 
-}
-
-export const login = async (req, res, next) => {
+export const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body
-    if (!email || !password) return res.status(401).json({ message: "Email required for login" })
+    if (!email || !password) throw new apiError(400, "All fields required for login")
     const user = await User.findOne({ email })
-    if (!user) return res.status(400).json({ message: "User does noe exist " });
+    if (!user) throw new apiError(404, "Not Found User does not exist")
     const isPasswordValid = await user.isPasswordCorrect(password)
-    if (!isPasswordValid) return res.status(401).json({ message: "Invalid credentials" });
+    if (!isPasswordValid) throw new apiError(401, "Invalid credentials")
 
     const accessToken = await user.generateAccessToken()
     const refreshToken = await user.generateRefreshToken()
+
     user.refreshToken = refreshToken;
+
     await user.save();
+
     return res
         .status(200)
-        .json({
-            message: "User Logged in Successful",
-            accessToken,
-            refreshToken
-        }
+        .json(
+            new apiResponse(200, { user ,accessToken, refreshToken }, "User Logged in Successful")
         )
+})
 
-}
 
-export const profile = (req, res) => {
-    return res.status(200).json(req.user);
-};
-export const logout = async (req, res) => {
+export const profile = asyncHandler((req, res) => {
+    return res.status(200).json(new apiResponse(200, req.user, "Profile Fetched successfully"))
+})
+
+
+
+export const logout = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user.id, {
         $set: {
             refreshToken: ""
         }
     })
-    return res.status(200).json({message:"User logged out "})
-}
+    return res.status(200).json(
+        new apiResponse(200, null, "User logged out Successfully")
+    )
+})
