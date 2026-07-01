@@ -28,7 +28,7 @@ export const getNotes = asyncHandler(
     async (req, res) => {
         const notes = await Note.find({
             owner: req.user.id
-        });
+        }).populate("owner",  "-password -refreshToken ");
 
         return res.status(200).json(
             new apiResponse(200, notes, "Notes fetched successfully")
