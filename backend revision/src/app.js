@@ -25,5 +25,15 @@ app.use("/users", userRoute)
 app.use("/api/v1/auth", authRouter)
 
 app.use("/api/v1", noteRouter)
+app.use((err, req, res, next) => {
+
+    console.error(err);
+
+    res.status(err.statusCode || 500).json({
+        success: false,
+        message: err.message || "Internal Server Error"
+    });
+
+});
 
 export default app
