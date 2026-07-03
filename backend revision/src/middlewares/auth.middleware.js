@@ -2,7 +2,8 @@ import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 
 export const verifyJWT = async (req, res, next) => {
-    const token = req.header("Authorization")?.replace("Bearer ", "")
+    const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+
     if (!token) return res.status(401).json({ message: "Unauthorized request" });
     try {
         const decodeToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)

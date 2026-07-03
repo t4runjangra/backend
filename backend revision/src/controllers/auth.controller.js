@@ -2,7 +2,7 @@ import { User } from "../models/user.model.js";
 import { apiError } from "../utils/api.error.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-
+import jwt from "jsonwebtoken"
 
 export const register = asyncHandler(async (req, res) => {
     const { email, password, username } = req.body
@@ -36,7 +36,9 @@ export const login = asyncHandler(async (req, res) => {
 
     user.refreshToken = refreshToken;
 
-    await user.save();
+    await user.save({
+        validateBeforeSave: false
+    });
     const options = {
         httpOnly: true,
         secure: false,
@@ -65,8 +67,47 @@ export const logout = asyncHandler(async (req, res) => {
         }
     })
     return res.status(200)
-    .clearCookie("refreshToken")
-    .json(
-        new apiResponse(200, null, "User logged out Successfully")
-    )
+        .clearCookie("refreshToken")
+        .json(
+            new apiResponse(200, null, "User logged out Successfully")
+        )
+})
+
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+    const refreshToken = req.cookies.refreshToken
+    if (!refreshToken) {
+        throw new apiError(401, "Refresh token missing")
+    }
+    const verifiedRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
+
+    const decodedID = verifiedRefreshToken.id
+
+    const user = await User.findById(decodedID)
+    if (!user) {
+        throw new apiError(404, "User not found")
+    }
+    if (refreshToken !== user.refreshToken) {
+        throw new apiError(401, "Invalid Refresh Token");
+    }
+    const newAccessToken = await user.generateAccessToken()
+    const newRefreshToken = await user.generateRefreshToken()
+    user.refreshToken = newRefreshToken
+
+    await user.save({
+        validateBeforeSave: false
+    })
+    const options = {
+        httpOnly: true,
+        secure: false,
+        sameSite: "strict"
+    }
+    return res
+        .status(200)
+        .cookie("accessToken", newAccessToken, options)
+        .cookie("refreshToken", newRefreshToken, options)
+        .json(new apiResponse(
+            200,
+            {},
+            "Access token refreshed successfully"
+        ))
 })
