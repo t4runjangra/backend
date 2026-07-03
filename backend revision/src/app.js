@@ -2,9 +2,13 @@ import express from "express"
 import { userRoute } from "./routes/user.routes.js";
 import authRouter from "./routes/auth.routes.js";
 import noteRouter from "./routes/note.route.js";
+import cookieParser from "cookie-parser";
+
+
 const app = express();
 
 app.use(express.json())
+app.use(cookieParser());
 
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);

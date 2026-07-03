@@ -37,11 +37,17 @@ export const login = asyncHandler(async (req, res) => {
     user.refreshToken = refreshToken;
 
     await user.save();
-
+    const options = {
+        httpOnly: true,
+        secure: false,
+        sameSite: "strict"
+    }
     return res
         .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
         .json(
-            new apiResponse(200, { user ,accessToken, refreshToken }, "User Logged in Successful")
+            new apiResponse(200, { user }, "User Logged in Successful")
         )
 })
 
@@ -58,7 +64,9 @@ export const logout = asyncHandler(async (req, res) => {
             refreshToken: ""
         }
     })
-    return res.status(200).json(
+    return res.status(200)
+    .clearCookie("refreshToken")
+    .json(
         new apiResponse(200, null, "User logged out Successfully")
     )
 })
