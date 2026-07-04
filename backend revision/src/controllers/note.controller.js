@@ -7,7 +7,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 export const createNote = asyncHandler(
     async (req, res) => {
         const { title, content } = req.body
-        if (!title || !content) throw new apiError(400, "Fields should be filed ")
 
         const note = await Note.create({
             title,
@@ -45,7 +44,6 @@ export const updateNote = asyncHandler(async (req, res) => {
 
     const { title, content } = req.body;
 
-    if (!title || !content) throw new apiError(400, "Title and content are required")
 
 
     const note = await Note.findById(noteId);

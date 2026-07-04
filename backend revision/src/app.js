@@ -16,7 +16,7 @@ app.use(cookieParser());
 
 app.use(cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-    credentials:true
+    credentials: true
 }))
 
 
@@ -45,7 +45,8 @@ app.use((err, req, res, next) => {
 
     res.status(err.statusCode || 500).json({
         success: false,
-        message: err.message || "Internal Server Error"
+        message: err.message || "Internal Server Error",
+        errors: err.error || []
     });
 
 });

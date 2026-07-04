@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken"
 
 export const register = asyncHandler(async (req, res) => {
     const { email, password, username } = req.body
-    if (!email || !password || !username) throw new apiError(400, "All fields are required ")
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] })
     if (existingUser) throw new apiError(409, "User already exist try other credentials")
@@ -16,16 +15,18 @@ export const register = asyncHandler(async (req, res) => {
         email,
         password
     })
-
+    const createdUser = await User.findById(user._id).select("-password")
+    if (!createdUser) {
+        throw new apiError(500, "Something went wrong While regestirng a user");
+    }
 
     return res.status(201).json(
-        new apiResponse(201, user, "user registered successfully")
+        new apiResponse(201, { user: createdUser }, "user registered successfully")
     )
 })
 
 export const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body
-    if (!email || !password) throw new apiError(400, "All fields required for login")
     const user = await User.findOne({ email })
     if (!user) throw new apiError(404, "Not Found User does not exist")
     const isPasswordValid = await user.isPasswordCorrect(password)
@@ -39,6 +40,8 @@ export const login = asyncHandler(async (req, res) => {
     await user.save({
         validateBeforeSave: false
     });
+
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
     const options = {
         httpOnly: true,
         secure: false,
@@ -49,7 +52,7 @@ export const login = asyncHandler(async (req, res) => {
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
         .json(
-            new apiResponse(200, { user }, "User Logged in Successful")
+            new apiResponse(200, { user: loggedInUser }, "User Logged in Successful")
         )
 })
 
