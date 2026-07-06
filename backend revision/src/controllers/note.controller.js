@@ -45,7 +45,6 @@ export const updateNote = asyncHandler(async (req, res) => {
     const { title, content } = req.body;
 
 
-
     const note = await Note.findById(noteId);
 
     if (!note) throw new apiError(404, "Note not found")

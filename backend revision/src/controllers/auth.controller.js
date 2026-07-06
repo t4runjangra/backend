@@ -114,3 +114,24 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
             "Access token refreshed successfully"
         ))
 })
+
+
+export const updateAvatar = asyncHandler(async (req, res) => {
+    console.log("USER:", req.user);
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+
+    return res.status(200).json({
+        success: true,
+        message: "File received successfully",
+        body: req.body,
+        file: {
+            fieldname: req.file?.fieldname,
+            originalname: req.file?.originalname,
+            mimetype: req.file?.mimetype,
+            size: req.file?.size,
+            hasBuffer: Boolean(req.file?.buffer),
+        },
+    });
+
+})
