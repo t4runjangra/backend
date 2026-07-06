@@ -3,7 +3,8 @@ import { apiError } from "../utils/api.error.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken"
-
+import { uploadOnCloundinary } from "../utils/cloudinary.js";
+import cloudinary from "cloudinary"
 export const register = asyncHandler(async (req, res) => {
     const { email, password, username } = req.body
 
@@ -117,21 +118,72 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
 
 export const updateAvatar = asyncHandler(async (req, res) => {
-    console.log("USER:", req.user);
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
+    if (!req.file) {
+        throw new apiError(400, "Avatar file is required");
+    }
 
-    return res.status(200).json({
-        success: true,
-        message: "File received successfully",
-        body: req.body,
-        file: {
-            fieldname: req.file?.fieldname,
-            originalname: req.file?.originalname,
-            mimetype: req.file?.mimetype,
-            size: req.file?.size,
-            hasBuffer: Boolean(req.file?.buffer),
-        },
-    });
+    const currentUser = await User.findById(req.user.id);
 
-})
+    if (!currentUser) {
+        throw new apiError(404, "User not found");
+    }
+
+    const oldPublicId = currentUser.avatar?.publicId;
+
+    const uploadedAvatar = await uploadOnCloundinary(req.file.buffer);
+
+    let updatedUser;
+
+    try {
+        updatedUser = await User.findByIdAndUpdate(
+            req.user.id,
+            {
+                $set: {
+                    avatar: {
+                        url: uploadedAvatar.url,
+                        publicId: uploadedAvatar.publicId,
+                    },
+                },
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        ).select("-password -refreshToken");
+
+        if (!updatedUser) {
+            throw new apiError(404, "User not found");
+        }
+    } catch (error) {
+        try {
+            await deleteFromCloudinary(uploadedAvatar.publicId);
+        } catch (cleanupError) {
+            console.error(
+                "Failed to delete newly uploaded avatar after DB failure:",
+                cleanupError
+            );
+        }
+
+        throw error;
+    }
+
+
+    if (oldPublicId) {
+        try {
+            await deleteFromCloudinary(oldPublicId);
+        } catch (cleanupError) {
+            console.error(
+                "Failed to delete old avatar:",
+                cleanupError
+            );
+        }
+    }
+
+    return res.status(200).json(
+        new apiResponse(
+            200,
+            updatedUser,
+            "Avatar uploaded successfully"
+        )
+    );
+});

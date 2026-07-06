@@ -17,6 +17,16 @@ It only describes how a document should look.
 const userSchema = new mongoose.Schema({
 
     // Username field
+    avatar: {
+        url: {
+            type: String,
+            default: null,
+        },
+        publicId: {
+            type: String,
+            default: null,
+        },
+    },
     username: {
         type: String,          // Data type should be String
         unique: true,          // Creates a unique index (no duplicate usernames)
