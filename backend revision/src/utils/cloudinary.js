@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from "cloudinary"
 import dotenv from "dotenv";
-
+import fs from "fs/promises"
 dotenv.config()
 
 cloudinary.config({
@@ -31,14 +31,44 @@ const uploadOnCloundinary = (buffer) => {
     })
 }
 
+const uploadLocalFileToCloudinary = async (localFilePath) => {
+    if (!localFilePath) {
+        return null;
+    }
+
+    try {
+        const result = await cloudinary.uploader.upload(localFilePath, {
+            folder: "cover-avatar",
+            resource_type: "image",
+        });
+
+        return {
+            url: result.secure_url,
+            publicId: result.public_id,
+        };
+    } finally {
+        console.log("DELETING TEMP FILE:", localFilePath);
+        try {
+            await fs.unlink(localFilePath);
+            console.log("TEMP FILE DELETED");
+        } catch (cleanupError) {
+            console.error(
+                "Failed to delete temporary local file:",
+                cleanupError
+            );
+        }
+    }
+}
+
+
 const deleteFromCloudinary = async (publicId) => {
     if (!publicId) {
         return null
     }
     const result = await cloudinary.uploader.destroy(publicId, {
-        resouce_type: "image"
+        resource_type: "image",
     })
 
-    return result
+    return result;
 }
-export { uploadOnCloundinary, deleteFromCloudinary }
+export { uploadOnCloundinary, deleteFromCloudinary, uploadLocalFileToCloudinary }

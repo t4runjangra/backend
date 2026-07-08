@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken";
+import { type } from "os";
 /*
 Schema is the blueprint of a MongoDB document.
 
@@ -21,6 +22,16 @@ const userSchema = new mongoose.Schema({
         url: {
             type: String,
             default: null,
+        },
+        publicId: {
+            type: String,
+            default: null,
+        },
+    },
+    coverAvatar: {
+        url: {
+            type: String,
+            default: null
         },
         publicId: {
             type: String,

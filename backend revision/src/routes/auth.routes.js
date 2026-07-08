@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { login, register, profile, updateAvatar } from "../controllers/auth.controller.js"
+import { login, register, profile, updateAvatar, uploadCoverAvatar } from "../controllers/auth.controller.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { registerSchema, loginSchema } from "../validators/auth.validator.js";
 import { upload } from "../middlewares/multer.middlewar.js";
+import { diskUpload } from "../middlewares/multer.disk.middleware.js";
 
 const authRouter = Router()
 
@@ -17,4 +18,11 @@ authRouter.patch(
     upload.single("avatar"),
     updateAvatar
 );
+ 
+authRouter.patch(
+    "/cover-avatar",
+    verifyJWT,
+    diskUpload.single("cover-avatar"),
+    uploadCoverAvatar
+) 
 export default authRouter

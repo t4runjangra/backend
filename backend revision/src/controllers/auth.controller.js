@@ -3,7 +3,7 @@ import { apiError } from "../utils/api.error.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken"
-import { uploadOnCloundinary } from "../utils/cloudinary.js";
+import { uploadOnCloundinary, deleteFromCloudinary, uploadLocalFileToCloudinary } from "../utils/cloudinary.js";
 import cloudinary from "cloudinary"
 export const register = asyncHandler(async (req, res) => {
     const { email, password, username } = req.body
@@ -131,6 +131,7 @@ export const updateAvatar = asyncHandler(async (req, res) => {
     const oldPublicId = currentUser.avatar?.publicId;
 
     const uploadedAvatar = await uploadOnCloundinary(req.file.buffer);
+    // throw new Error("Forced DB failure");
 
     let updatedUser;
 
@@ -146,7 +147,7 @@ export const updateAvatar = asyncHandler(async (req, res) => {
                 },
             },
             {
-                new: true,
+                returnDocument: "after",
                 runValidators: true,
             }
         ).select("-password -refreshToken");
@@ -187,3 +188,71 @@ export const updateAvatar = asyncHandler(async (req, res) => {
         )
     );
 });
+
+
+export const uploadCoverAvatar = asyncHandler(async (req, res) => {
+    if (!req.file) {
+        throw new apiError(400, "Cover file is required")
+    }
+    const currentUser = await User.findById(req.user.id)
+
+    if (!currentUser) {
+        throw new apiError(404, "User not found");
+    }
+    const oldPublicId = currentUser.coverAvatar?.publicId;
+
+    const uploadedCoverAvatar = await uploadLocalFileToCloudinary(req.file.path)
+
+
+    let updatedUser;
+    try {
+        updatedUser = await User.findByIdAndUpdate(
+            req.user.id,
+            {
+                $set: {
+                    coverAvatar: {
+                        url: uploadedCoverAvatar.url,
+                        publicId: uploadedCoverAvatar.publicId,
+                    },
+                },
+            },
+            {
+                returnDocument: "after",
+                runValidators: true,
+            }
+        ).select("-password -refreshToken")
+
+        if (!updatedUser) {
+            throw new apiError(404, "User not found ")
+        }
+
+    } catch (error) {
+        try {
+            await deleteFromCloudinary(uploadedCoverAvatar.publicId);
+        } catch (cleanupError) {
+            console.error(
+                "Failed to delete newly uploaded avatar after DB failure:",
+                cleanupError
+            );
+        }
+
+        throw error;
+    }
+
+    if (oldPublicId) {
+        try {
+            await deleteFromCloudinary(oldPublicId);
+        } catch (cleanupError) {
+            console.error(
+                "Failed to delete old avatar:",
+                cleanupError
+            );
+        }
+    }
+
+    return res.status(200).json(new apiResponse(
+        200,
+        updatedUser,
+        "Cover Avatar updated successfully"
+    ))
+})
