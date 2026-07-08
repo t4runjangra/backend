@@ -1,5 +1,4 @@
 import express from "express"
-import { userRoute } from "./routes/user.routes.js";
 import authRouter from "./routes/auth.routes.js";
 import noteRouter from "./routes/note.route.js";
 import cookieParser from "cookie-parser";
@@ -34,7 +33,7 @@ app.get('/', (req, res) => {
     res.send("backend Revision started")
 })
 
-app.use("/users", userRoute)
+
 
 app.use("/api/v1/auth", authRouter)
 

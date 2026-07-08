@@ -5,9 +5,19 @@ import { createNoteSchema, updateNoteSchema } from "../validators/note.validator
 import { validate } from "../middlewares/validate.middleware.js";
 const noteRouter = Router()
 
-noteRouter.post("/note", validate(createNoteSchema), verifyJWT, createNote)
-noteRouter.get("/note", verifyJWT, getNotes)
-noteRouter.patch("/note/:id", validate(updateNoteSchema), verifyJWT, updateNote)
+noteRouter.post("/note",
+    verifyJWT,
+    validate(createNoteSchema),
+    createNote
+)
+noteRouter.get("/note",
+    verifyJWT,
+    getNotes
+)
+noteRouter.patch("/note/:id",
+    verifyJWT,
+    validate(updateNoteSchema),
+    updateNote)
 noteRouter.delete("/note/:id", verifyJWT, deleteNote)
 
 export default noteRouter

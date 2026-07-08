@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { login, register, profile, updateAvatar, uploadCoverAvatar } from "../controllers/auth.controller.js"
+import { login, register, profile, updateAvatar, uploadCoverAvatar, logout } from "../controllers/auth.controller.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { registerSchema, loginSchema } from "../validators/auth.validator.js";
@@ -18,11 +18,13 @@ authRouter.patch(
     upload.single("avatar"),
     updateAvatar
 );
- 
+
 authRouter.patch(
     "/cover-avatar",
     verifyJWT,
     diskUpload.single("cover-avatar"),
     uploadCoverAvatar
-) 
+)
+
+authRouter.post("/logout", verifyJWT, logout)
 export default authRouter

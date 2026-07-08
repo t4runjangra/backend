@@ -27,7 +27,7 @@ export const getNotes = asyncHandler(
     async (req, res) => {
         const notes = await Note.find({
             owner: req.user.id
-        }).populate("owner",  "-password -refreshToken ");
+        }).populate("owner", "-password -refreshToken -avatar -coverAvatar");
 
         return res.status(200).json(
             new apiResponse(200, notes, "Notes fetched successfully")
@@ -45,7 +45,12 @@ export const updateNote = asyncHandler(async (req, res) => {
     const { title, content } = req.body;
 
 
-    const note = await Note.findById(noteId);
+    const note = await Note.findById({
+
+        _id: noteId,
+        owner: req.user.id
+
+    });
 
     if (!note) throw new apiError(404, "Note not found")
 
@@ -72,7 +77,10 @@ export const deleteNote = asyncHandler(async (req, res) => {
 
 
 
-    const note = await Note.findById(noteId);
+    const note = await Note.findOneAndDelete({
+        _id: noteId,
+        owner: req.user.id,
+    });
 
     if (!note) throw new apiError(404, "Note not found")
 
@@ -84,6 +92,6 @@ export const deleteNote = asyncHandler(async (req, res) => {
     await note.deleteOne();
 
     return res.status(200).json(
-        new apiResponse(200, null,  "Note deleted successfully")
+        new apiResponse(200, null, "Note deleted successfully")
     )
 })

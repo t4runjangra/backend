@@ -3,8 +3,9 @@ import { apiError } from "../utils/api.error.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken"
-import { uploadOnCloundinary, deleteFromCloudinary, uploadLocalFileToCloudinary } from "../utils/cloudinary.js";
-import cloudinary from "cloudinary"
+import { uploadOnCloudinary, deleteFromCloudinary, uploadLocalFileToCloudinary } from "../utils/cloudinary.js";
+
+
 export const register = asyncHandler(async (req, res) => {
     const { email, password, username } = req.body
 
@@ -72,6 +73,7 @@ export const logout = asyncHandler(async (req, res) => {
     })
     return res.status(200)
         .clearCookie("refreshToken")
+        .clearCookie("accessToken")
         .json(
             new apiResponse(200, null, "User logged out Successfully")
         )
@@ -130,7 +132,7 @@ export const updateAvatar = asyncHandler(async (req, res) => {
 
     const oldPublicId = currentUser.avatar?.publicId;
 
-    const uploadedAvatar = await uploadOnCloundinary(req.file.buffer);
+    const uploadedAvatar = await uploadOnCloudinary(req.file.buffer);
     // throw new Error("Forced DB failure");
 
     let updatedUser;

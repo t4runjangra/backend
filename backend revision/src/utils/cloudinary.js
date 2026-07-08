@@ -9,7 +9,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloundinary = (buffer) => {
+const uploadOnCloudinary = (buffer) => {
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
             {
@@ -71,4 +71,4 @@ const deleteFromCloudinary = async (publicId) => {
 
     return result;
 }
-export { uploadOnCloundinary, deleteFromCloudinary, uploadLocalFileToCloudinary }
+export { uploadOnCloudinary, deleteFromCloudinary, uploadLocalFileToCloudinary }
