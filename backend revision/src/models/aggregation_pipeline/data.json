@@ -1,0 +1,122 @@
+[
+  {
+    "student": "U1",
+    "company": "C1",
+    "status": "selected",
+    "package": 1200000
+  },
+  {
+    "student": "U2",
+    "company": "C1",
+    "status": "selected",
+    "package": 1000000
+  },
+  {
+    "student": "U1",
+    "company": "C1",
+    "status": "selected",
+    "package": 1200000
+  },
+  {
+    "student": "U3",
+    "company": "C1",
+    "status": "rejected",
+    "package": 0
+  },
+  {
+    "student": "U4",
+    "company": "C2",
+    "status": "selected",
+    "package": 1500000
+  },
+  {
+    "student": "U5",
+    "company": "C2",
+    "status": "selected",
+    "package": 1600000
+  },
+  {
+    "student": "U6",
+    "company": "C2",
+    "status": "selected",
+    "package": 1400000
+  },
+  {
+    "student": "U4",
+    "company": "C2",
+    "status": "selected",
+    "package": 1500000
+  },
+  {
+    "student": "U7",
+    "company": "C2",
+    "status": "pending",
+    "package": 0
+  },
+  {
+    "student": "U8",
+    "company": "C3",
+    "status": "selected",
+    "package": 900000
+  },
+  {
+    "student": "U9",
+    "company": "C3",
+    "status": "rejected",
+    "package": 0
+  },
+  {
+    "student": "U10",
+    "company": "C3",
+    "status": "pending",
+    "package": 0
+  },
+  {
+    "student": "U11",
+    "company": "C4",
+    "status": "selected",
+    "package": 2000000
+  },
+  {
+    "student": "U12",
+    "company": "C4",
+    "status": "selected",
+    "package": 2200000
+  },
+  {
+    "student": "U13",
+    "company": "C4",
+    "status": "rejected",
+    "package": 0
+  },
+  {
+    "student": "U14",
+    "company": "C5",
+    "status": "selected",
+    "package": 800000
+  },
+  {
+    "student": "U15",
+    "company": "C5",
+    "status": "pending",
+    "package": 0
+  },
+  {
+    "student": "U2",
+    "company": "C4",
+    "status": "selected",
+    "package": 2100000
+  },
+  {
+    "student": "U6",
+    "company": "C1",
+    "status": "rejected",
+    "package": 0
+  },
+  {
+    "student": "U10",
+    "company": "C2",
+    "status": "selected",
+    "package": 1300000
+  }
+]
