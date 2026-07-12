@@ -6,7 +6,7 @@ import { registerSchema, loginSchema, resendEmailSchema, forgetPasswordSchema, p
 import { upload } from "../middlewares/multer.middlewar.js";
 import { diskUpload } from "../middlewares/multer.disk.middleware.js";
 import { verifyEmail } from "../controllers/auth.controller.js";
-import { resendEmailVerificationLimiter } from "../middlewares/rateLimit.middleware.js";
+import { resendEmailVerificationLimiter, resetPasswordLimiter } from "../middlewares/rateLimit.middleware.js";
 const authRouter = Router()
 
 authRouter.post("/register", validate(registerSchema), register)
@@ -32,5 +32,5 @@ authRouter.post("/resend-verification", resendEmailVerificationLimiter, validate
 authRouter.post("/logout", verifyJWT, logout)
 
 authRouter.post("/forget-password", validate(forgetPasswordSchema), forgetPassword)
-authRouter.post("/reset-password/:token", validate(passwordResetSchema), resetPassword )
+authRouter.post("/reset-password/:token", resetPasswordLimiter.validate(passwordResetSchema), resetPassword)
 export default authRouter
