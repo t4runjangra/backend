@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { login, register, profile, updateAvatar, uploadCoverAvatar, logout } from "../controllers/auth.controller.js"
+import { login, register, profile, updateAvatar, uploadCoverAvatar, logout, resendEmail } from "../controllers/auth.controller.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
-import { registerSchema, loginSchema } from "../validators/auth.validator.js";
+import { registerSchema, loginSchema, resendEmailSchema } from "../validators/auth.validator.js";
 import { upload } from "../middlewares/multer.middlewar.js";
 import { diskUpload } from "../middlewares/multer.disk.middleware.js";
 import { verifyEmail } from "../controllers/auth.controller.js";
@@ -26,5 +26,7 @@ authRouter.patch(
     uploadCoverAvatar
 )
 authRouter.get("/verify-email/:rawToken", verifyEmail)
+
+authRouter.post("/resend-verification", validate(resendEmailSchema), resendEmail)
 authRouter.post("/logout", verifyJWT, logout)
 export default authRouter

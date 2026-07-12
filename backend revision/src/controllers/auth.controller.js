@@ -53,9 +53,17 @@ export const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body
     const user = await User.findOne({ email })
     if (!user) throw new apiError(404, "Not Found User does not exist")
+
+
     const isPasswordValid = await user.isPasswordCorrect(password)
     if (!isPasswordValid) throw new apiError(401, "Invalid credentials")
 
+    if (!user.isEmailVerified) {
+        throw new apiError(
+            403,
+            "Please verify your email before logging in"
+        );
+    }
     const accessToken = await user.generateAccessToken()
     const refreshToken = await user.generateRefreshToken()
 
@@ -71,6 +79,7 @@ export const login = asyncHandler(async (req, res) => {
         secure: false,
         sameSite: "strict"
     }
+
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
@@ -306,13 +315,54 @@ export const verifyEmail = asyncHandler(async (req, res) => {
     user.emailVerificationToken = null
     user.emailVerificationExpiry = null
     user.isEmailVerified = true
-    await user.save({validateBeforeSave  : false})
+    await user.save({ validateBeforeSave: false })
 
     return res.status(200).json(
         new apiResponse(
             200,
-            {isEmailVerified : true},
+            { isEmailVerified: true },
             "Email is verified"
+        )
+    )
+})
+
+export const resendEmail = asyncHandler(async (req, res) => {
+
+    const { email } = req.body
+
+    if (!user || user.isEmailVerified) {
+        return res.status(200)
+            .json(
+                new apiResponse(
+                    200,
+                    null,
+                    "If an unverified account exists for this email, a verification email has been sent"
+                ));
+    }
+    const { rawToken, hashedToken, expiry } = genereateVerificationToken()
+
+    user.emailVerificationToken = hashedToken
+    user.emailVerificationExpiry = expiry
+
+    const verificationUrl =
+        `${process.env.BACKEND_URL}/api/v1/auth/verify-email/${rawToken}`;
+
+    await user.save({ validateBeforeSave: false })
+    await sendEmail(
+        user.email,
+        "Verify your email",
+        `
+        <h2>Verify your email address</h2>
+        <p>Click the link below to verify your account:</p>
+        <a href="${verificationUrl}">Verify Email</a>
+        <p>This link expires in 30 minutes.</p>
+    `
+    );
+    return res.status(200).json(
+        new apiResponse(
+            200,
+            null,
+            "If an unverified account exists for this email, a verification email has been sent"
         )
     )
 })
