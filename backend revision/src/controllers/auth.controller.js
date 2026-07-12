@@ -4,19 +4,41 @@ import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken"
 import { uploadOnCloudinary, deleteFromCloudinary, uploadLocalFileToCloudinary } from "../utils/cloudinary.js";
-
-
+import { genereateVerificationToken } from "../utils/generateVerificationToken.js";
+import { sendEmail } from "../utils/sendEmail.js";
+import crypto from "crypto"
 export const register = asyncHandler(async (req, res) => {
     const { email, password, username } = req.body
+    const { rawToken, hashedToken, expiry } = genereateVerificationToken()
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] })
     if (existingUser) throw new apiError(409, "User already exist try other credentials")
 
+    const verificationUrl =
+        `${process.env.BACKEND_URL}/api/v1/auth/verify-email/${rawToken}`;
+
     const user = await User.create({
         username,
         email,
-        password
+        password,
+
+
+        isEmailVerified: false,
+        emailVerificationToken: hashedToken,
+        emailVerificationExpiry: expiry
+
     })
+    await sendEmail(
+        user.email,
+        "Verify your email",
+        `
+        <h2>Verify your email address</h2>
+        <p>Click the link below to verify your account:</p>
+        <a href="${verificationUrl}">Verify Email</a>
+        <p>This link expires in 30 minutes.</p>
+    `
+    );
+
     const createdUser = await User.findById(user._id).select("-password")
     if (!createdUser) {
         throw new apiError(500, "Something went wrong While regestirng a user");
@@ -261,3 +283,36 @@ export const uploadCoverAvatar = asyncHandler(async (req, res) => {
 
 
 
+export const verifyEmail = asyncHandler(async (req, res) => {
+    const { rawToken } = req.params
+    if (!rawToken) {
+        throw new apiError(400, "Email token is required")
+    }
+
+    const hashedToken = crypto
+        .createHash("sha256")
+        .update(rawToken)
+        .digest("hex")
+
+    const user = await User.findOne({
+        emailVerificationToken: hashedToken,
+        emailVerificationExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        throw new apiError(400, "Token is invalid or expired");
+    }
+
+    user.emailVerificationToken = null
+    user.emailVerificationExpiry = null
+    user.isEmailVerified = true
+    await user.save({validateBeforeSave  : false})
+
+    return res.status(200).json(
+        new apiResponse(
+            200,
+            {isEmailVerified : true},
+            "Email is verified"
+        )
+    )
+})

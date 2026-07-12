@@ -5,7 +5,7 @@ import { validate } from "../middlewares/validate.middleware.js";
 import { registerSchema, loginSchema } from "../validators/auth.validator.js";
 import { upload } from "../middlewares/multer.middlewar.js";
 import { diskUpload } from "../middlewares/multer.disk.middleware.js";
-
+import { verifyEmail } from "../controllers/auth.controller.js";
 const authRouter = Router()
 
 authRouter.post("/register", validate(registerSchema), register)
@@ -25,6 +25,6 @@ authRouter.patch(
     diskUpload.single("cover-avatar"),
     uploadCoverAvatar
 )
-
+authRouter.get("/verify-email/:rawToken", verifyEmail)
 authRouter.post("/logout", verifyJWT, logout)
 export default authRouter
