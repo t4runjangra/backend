@@ -369,3 +369,81 @@ export const resendEmail = asyncHandler(async (req, res) => {
         )
     )
 })
+
+export const forgetPassword = asyncHandler(async (req, res) => {
+    const RESPONSE_MESSAGE = "If an account exists for this email, a password reset link has been sent";
+    const { email } = req.body
+
+    const user = await User.findOne({ email })
+
+    if (!user) {
+        return res.status(200).json(
+            new apiResponse(200, null, RESPONSE_MESSAGE)
+        );
+    }
+
+    const { rawToken, hashedToken, expiry } = genereateVerificationToken()
+
+    const verificationUrl =
+        `${process.env.BACKEND_URL}/api/v1/auth/reset-password/${rawToken}`;
+
+    user.passwordResetToken = hashedToken
+    user.passwordResetExpiry = expiry
+    await user.save()
+    await sendEmail(
+        user.email,
+        "Reset Your Password",
+        `
+    <h2>Password Reset Request</h2>
+    <p>We received a request to reset the password for your account.</p>
+    <p>Click the link below to set a new password:</p>
+    
+    <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+    
+    <p style="margin-top: 20px; font-size: 14px; color: #666;">
+      Or copy and paste this link into your browser:<br>
+      ${verificationUrl}
+    </p>
+    
+    <p><strong>This link expires in 30 minutes.</strong></p>
+    
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+    
+    <p style="font-size: 12px; color: #999;">
+      Didn't request this? You can safely ignore this email. Your password will not be changed unless you click the link above.
+    </p>
+  `
+    );
+
+    return res.status(200).json(
+        new apiResponse(200, null, "Forget Password link has been sent to your email address ")
+    )
+})
+
+
+export const resetPassword = asyncHandler(async (req, res) => {
+    const {  token: rawToken } = req.params
+    if (!rawToken) {
+        throw new apiError(400, "Email token is required")
+    }
+    const { newPassword } = req.body
+
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex")
+    const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpiry: { $gt: Date.now() }
+    })
+    if (!user) {
+        throw new apiError(400, "Token is invalid or expired");
+    }
+    user.password = newPassword
+    user.passwordResetToken = null
+    user.passwordResetExpiry = null
+    user.refreshToken = null
+    await user.save()
+
+    
+    return res.status(200).json(
+        new apiResponse(200, null, "Password reset successful")
+    )
+})
