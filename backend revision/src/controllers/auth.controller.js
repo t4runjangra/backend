@@ -330,6 +330,8 @@ export const resendEmail = asyncHandler(async (req, res) => {
 
     const { email } = req.body
 
+    const user = await User.findOne({ email })
+
     if (!user || user.isEmailVerified) {
         return res.status(200)
             .json(
@@ -358,6 +360,7 @@ export const resendEmail = asyncHandler(async (req, res) => {
         <p>This link expires in 30 minutes.</p>
     `
     );
+    await user.save({ validateBeforeSave: false })
     return res.status(200).json(
         new apiResponse(
             200,

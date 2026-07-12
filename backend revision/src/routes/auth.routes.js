@@ -6,6 +6,7 @@ import { registerSchema, loginSchema, resendEmailSchema } from "../validators/au
 import { upload } from "../middlewares/multer.middlewar.js";
 import { diskUpload } from "../middlewares/multer.disk.middleware.js";
 import { verifyEmail } from "../controllers/auth.controller.js";
+import { resendEmailVerificationLimiter } from "../middlewares/rateLimit.middleware.js";
 const authRouter = Router()
 
 authRouter.post("/register", validate(registerSchema), register)
@@ -27,6 +28,6 @@ authRouter.patch(
 )
 authRouter.get("/verify-email/:rawToken", verifyEmail)
 
-authRouter.post("/resend-verification", validate(resendEmailSchema), resendEmail)
+authRouter.post("/resend-verification", resendEmailVerificationLimiter, validate(resendEmailSchema), resendEmail)
 authRouter.post("/logout", verifyJWT, logout)
 export default authRouter
